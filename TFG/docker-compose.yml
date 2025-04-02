@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./SYMFONY/CrazyQuackCode
+    container_name: crazyquack_backend
+    ports:
+      - "8000:80"
+    volumes:
+      - ./SYMFONY/CrazyQuackCode:/var/www/html
+    environment:
+      DATABASE_URL: mysql://root:root@mysql:3306/mecanografia
+    depends_on:
+      - mysql
+
+  frontend:
+    build:
+      context: ./REACT/typing-game
+    container_name: crazyquack_frontend
+    restart: unless-stopped
+    volumes:
+      - "./REACT/typing-game:/app"
+      - /app/node_modules
+    ports:
+      - 3000:3000
+    environment:
+      - HOST=0.0.0.0
+    command: ["npm", "run", "dev"]
+
+
+
+  mysql:
+    image: mysql:8.0
+    container_name: crazyquack_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mecanografia
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: crazyquack_phpmyadmin
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql
+
+volumes:
+  db_data:
